@@ -55,6 +55,10 @@ def key_protected(func):
 @app.route("/random_anime_wallpaper")
 def random_anime_wallpaper():
     res = storage.get_list()
+    if len(res) == 0:
+        update()
+        res = storage.get_list()
+
     while True:
         choice = res[random.randint(0, len(res)-1)]
         print(choice)
