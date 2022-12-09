@@ -1,3 +1,4 @@
+from os import makedirs
 import os.path
 import hashlib
 import string
@@ -14,6 +15,9 @@ class storage:
     def path(self, src):
         ext = src["img"].split(".")[-1]
         if len(ext)>4 or self.sanitize(ext)!=ext: ext = 'jpg'
+
+        if not os.path.isdir('static'):
+            makedirs('static')
 
         path = "static/" + self.sanitize(src["title"]) + "_" + hashlib.sha1(src["img"].encode()).hexdigest()[0:6] + "." + ext
 
