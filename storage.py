@@ -1,4 +1,4 @@
-from os import makedirs
+import os
 import os.path
 import hashlib
 import string
@@ -6,9 +6,18 @@ import requests
 import json
 
 GOOD_CHARS = "-_.() %s%s" % (string.ascii_letters, string.digits)
-IMG_LIST_FILE = "list.json"
+IMG_LIST_FILE = "data/list.json"
 
 class storage:
+    def __init__(self) -> None:
+        os.makedirs("data", exist_ok=True)
+        if os.path.isfile("list.json"):
+            os.rename("list.json", IMG_LIST_FILE)
+        if not os.path.isfile(IMG_LIST_FILE):
+            with open(IMG_LIST_FILE, "w") as f:
+                f.write('[]')
+                f.close()
+
     def sanitize(self, name):
         return ''.join(c for c in name if c in GOOD_CHARS)[:240].replace(' ', '_')
     
@@ -17,7 +26,7 @@ class storage:
         if len(ext)>4 or self.sanitize(ext)!=ext: ext = 'jpg'
 
         if not os.path.isdir('static'):
-            makedirs('static')
+            os.makedirs('static')
 
         path = "static/" + self.sanitize(src["title"]) + "_" + hashlib.sha1(src["img"].encode()).hexdigest()[0:6] + "." + ext
 
@@ -41,11 +50,6 @@ class storage:
             return path
             
         self.download_img(src["img"], path)
-        
-        if not os.path.isfile(IMG_LIST_FILE):
-            with open(IMG_LIST_FILE, "w") as f:
-                f.write('[]')
-                f.close()
 
         imgs = json.load(open(IMG_LIST_FILE, "r"))
         src["selected"] = 0
