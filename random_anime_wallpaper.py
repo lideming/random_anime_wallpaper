@@ -42,8 +42,10 @@ storage = storage()
 def key_protected(func):
     @wraps(func)
     def wrapper():
+        if KEY == "" or request.args.get('key', '') == KEY:
+            return func()
         json = request.get_json()
-        if KEY == "" or request.args.get('key', '') == KEY or (json and 'key' in json and json['key'] == KEY):
+        if json and 'key' in json and json['key'] == KEY:
             return func()
         else:
             return jsonify({"error":"403","reason":"This operation is key-protected. Please provide a correct key."})
