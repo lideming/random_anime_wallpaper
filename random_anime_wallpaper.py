@@ -67,7 +67,7 @@ def random_anime_wallpaper():
     selected = copy.deepcopy(choice)
     if request.args.get('download', False):
         selected["img_src"] = selected["img"]
-        selected["img"] = URL_BASE_PATH + storage.download(selected)
+        selected["img"] = URL_BASE_PATH + selected["path"]
     return jsonify(selected)
     
 @app.route("/update")

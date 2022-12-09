@@ -4,6 +4,7 @@ import hashlib
 import string
 import requests
 import json
+from PIL import Image
 
 GOOD_CHARS = "-_.() %s%s" % (string.ascii_letters, string.digits)
 IMG_LIST_FILE = "data/list.json"
@@ -19,7 +20,7 @@ class storage:
                 f.close()
 
     def sanitize(self, name):
-        return ''.join(c for c in name if c in GOOD_CHARS)[:240].replace(' ', '_')
+        return ''.join(c for c in name if c in GOOD_CHARS)[:230].replace(' ', '_')
     
     def path(self, src):
         ext = src["img"].split(".")[-1]
@@ -51,14 +52,27 @@ class storage:
             
         self.download_img(src["img"], path)
 
+        optimized_path = self.optimize_img(path)
+
         imgs = json.load(open(IMG_LIST_FILE, "r"))
         src["selected"] = 0
-        src["path"] = path
+        src["original_path"] = path
+        src["path"] = optimized_path
         imgs.append(src)
         with open(IMG_LIST_FILE, "w") as f:
             json.dump(imgs, f)
 
         return path
+
+    def optimize_img(self, path):
+        optimized_path = path + ".opt.jpg"
+        with Image.open(path) as img:
+            if img.mode != "RGB":
+                with img.convert("RGB") as converted_img:
+                    converted_img.save(optimized_path, "JPEG", quality=80, optimize=True, progressive=True)
+            else:
+                img.save(optimized_path, "JPEG", quality=80, optimize=True, progressive=True)
+        return optimized_path
     
     def get_list(self):
         return json.load(open(IMG_LIST_FILE, "r"))
