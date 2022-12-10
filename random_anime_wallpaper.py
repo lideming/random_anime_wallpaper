@@ -56,7 +56,7 @@ def key_protected(func):
 def random_anime_wallpaper():
     res = storage.get_list()
     if len(res) == 0:
-        update()
+        _update()
         res = storage.get_list()
 
     while True:
@@ -73,6 +73,9 @@ def random_anime_wallpaper():
 @app.route("/update")
 @key_protected
 def update():
+    return _update()
+
+def _update():
     for i in crawler.fetch_feed():
         storage.download(i)
     return 'ok'
