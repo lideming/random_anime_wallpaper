@@ -53,6 +53,11 @@ def key_protected(func):
             
     return wrapper
 
+@app.after_request
+def apply_caching(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
+
 @app.route("/random_anime_wallpaper")
 def random_anime_wallpaper():
     res = storage.get_list()
