@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import base64
 import random
 import os.path
 import copy
@@ -65,9 +66,12 @@ def random_anime_wallpaper():
         if choice["selected"] >=0: break
     
     selected = copy.deepcopy(choice)
-    if request.args.get('download', False):
+    if request.args.get('download', '0') != '0':
         selected["img_src"] = selected["img"]
         selected["img"] = URL_BASE_PATH + selected["path"]
+    if request.args.get('thumb_data', '0') != '0':
+        thumb_data = read_file_as_data_url(selected["thumb_path"])
+        selected["thumb_data"] = thumb_data
     return jsonify(selected)
     
 @app.route("/update")
@@ -99,3 +103,10 @@ def select():
 @app.route("/gallery")
 def gallery():
     return send_file("gallery/gallery.html")
+
+def read_file_as_data_url(path):
+    with open(path, 'rb') as f:
+        data = f.read()
+    img_base64 = base64.b64encode(data).decode()
+    thumb_data = "data:image/png;base64," + img_base64
+    return thumb_data

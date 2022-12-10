@@ -55,29 +55,38 @@ class storage:
         if os.path.isfile(path):
             return path
             
-        self.download_img(src["img"], path)
+        if not self.download_img(src["img"], path):
+            return None
 
-        optimized_path = self.optimize_img(path)
+        optimized_path, thumb_path = self.optimize_img(path)
 
         imgs = json.load(open(IMG_LIST_FILE, "r"))
         src["selected"] = 0
         src["original_path"] = path
         src["path"] = optimized_path
+        src["thumb_path"] = thumb_path
         imgs.append(src)
         with open(IMG_LIST_FILE, "w") as f:
             json.dump(imgs, f)
 
         return path
 
+    def open_img_as_rgb(self, path):
+        img = Image.open(path)
+        if img.mode != "RGB":
+            converted = img.convert("RGB")
+            img.close()
+            return converted
+        return img
+
     def optimize_img(self, path):
         optimized_path = path + ".opt.jpg"
-        with Image.open(path) as img:
-            if img.mode != "RGB":
-                with img.convert("RGB") as converted_img:
-                    converted_img.save(optimized_path, "JPEG", quality=80, optimize=True, progressive=True)
-            else:
-                img.save(optimized_path, "JPEG", quality=80, optimize=True, progressive=True)
-        return optimized_path
+        thumb_path = path + ".64.jpg"
+        with self.open_img_as_rgb(path) as img:
+            img.save(optimized_path, "JPEG", quality=70, optimize=True, progressive=True)
+            img.thumbnail((64, 64))
+            img.save(thumb_path, "JPEG", quality=50, optimize=True)
+        return optimized_path, thumb_path
     
     def get_list(self):
         return json.load(open(IMG_LIST_FILE, "r"))
