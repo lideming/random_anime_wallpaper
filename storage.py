@@ -40,9 +40,14 @@ class storage:
 
     def download_img(self, src, path):
         print("Downloading", src, "to", path)
+        res = requests.get(src)
+        if not res.ok:
+            return False
+        if not res.headers.get("content-type").startswith("image/"):
+            return False
         with open(path, 'wb') as f:
-            f.write(requests.get(src).content)
-        return src
+            f.write(res.content)
+        return True
 
     def download(self, src):
         path = self.path(src)
